@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { computeBalances } from "@/lib/expenses/balances";
 import { MemberRow } from "./member-row";
 import { AddMemberForm } from "./add-member-form";
+import { DeleteRoomSection } from "./delete-room-section";
 import type { Expense, ExpenseSplit, Room, RoomMember, Settlement } from "@/types/database";
 
 export function MembersView({
@@ -45,11 +46,18 @@ export function MembersView({
               net={balanceByMember[member.id] ?? 0}
               roomId={room.id}
               isMe={member.id === currentMemberId}
+              isViewerAdmin={isAdmin}
               canManage={isAdmin || member.id === currentMemberId}
             />
           </motion.div>
         ))}
       </div>
+
+      {isAdmin && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+          <DeleteRoomSection roomId={room.id} roomName={room.name} />
+        </motion.div>
+      )}
     </div>
   );
 }

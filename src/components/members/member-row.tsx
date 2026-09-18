@@ -2,9 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { motion } from "motion/react";
-import { Loader2, MoreVertical, UserMinus } from "lucide-react";
+import { Loader2, MoreVertical, ShieldMinus, ShieldPlus, UserMinus } from "lucide-react";
 import { toast } from "sonner";
 import { deactivateMember } from "@/lib/actions/settlements";
+import { setMemberRole } from "@/lib/actions/rooms";
 import { cn, formatCurrency } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -31,16 +33,19 @@ export function MemberRow({
   net,
   roomId,
   isMe,
+  isViewerAdmin,
   canManage,
 }: {
   member: RoomMember;
   net: number;
   roomId: string;
   isMe: boolean;
+  isViewerAdmin: boolean;
   canManage: boolean;
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [rolePending, startRoleTransition] = useTransition();
   const canDeactivate = Math.abs(net) <= 0.01;
 
   function handleDeactivate() {
@@ -51,6 +56,22 @@ export function MemberRow({
       setConfirmOpen(false);
     });
   }
+
+  function handleToggleAdmin() {
+    const nextRole = member.role === "admin" ? "member" : "admin";
+    startRoleTransition(async () => {
+      const { error } = await setMemberRole(member.id, roomId, nextRole);
+      if (error) toast.error(error);
+      else
+        toast.success(
+          nextRole === "admin"
+            ? `${member.display_name} is now an admin`
+            : `${member.display_name} is no longer an admin`,
+        );
+    });
+  }
+
+  const showMenu = (canManage || isViewerAdmin) && member.is_active;
 
   return (
     <motion.div
@@ -94,20 +115,37 @@ export function MemberRow({
         </div>
       </div>
 
-      {canManage && member.is_active && (
+      {showMenu && (
         <>
           <DropdownMenu>
             <DropdownMenuTrigger className="rounded-md p-1.5 text-muted-foreground hover:bg-muted">
               <MoreVertical className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                variant="destructive"
-                disabled={!canDeactivate}
-                onSelect={() => setConfirmOpen(true)}
-              >
-                <UserMinus /> Remove from room
-              </DropdownMenuItem>
+              {isViewerAdmin && (
+                <DropdownMenuItem disabled={rolePending} onSelect={handleToggleAdmin}>
+                  {rolePending ? (
+                    <Loader2 className="animate-spin" />
+                  ) : member.role === "admin" ? (
+                    <ShieldMinus />
+                  ) : (
+                    <ShieldPlus />
+                  )}
+                  {member.role === "admin" ? "Remove admin" : "Make admin"}
+                </DropdownMenuItem>
+              )}
+              {canManage && (
+                <>
+                  {isViewerAdmin && <DropdownMenuSeparator />}
+                  <DropdownMenuItem
+                    variant="destructive"
+                    disabled={!canDeactivate}
+                    onSelect={() => setConfirmOpen(true)}
+                  >
+                    <UserMinus /> Remove from room
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 

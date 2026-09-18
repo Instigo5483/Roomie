@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "motion/react";
-import { Copy, Home, LogOut } from "lucide-react";
+import { Copy, Home, LogOut, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/actions/auth";
 import {
@@ -55,6 +56,11 @@ export function RoomsGateway({
             <div className="px-2 pb-1.5 text-sm text-muted-foreground truncate">{userEmail}</div>
             <DropdownMenuItem onSelect={copyUsername}>
               <Copy /> Copy username (@{username})
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/settings">
+                <Settings /> Settings
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

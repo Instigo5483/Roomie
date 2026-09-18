@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { room_members, rooms, users } from "@/db/schema";
 import { requireActiveMembership, requireUserId } from "@/lib/auth/session";
@@ -104,4 +104,59 @@ export async function addRoomMember(
   revalidatePath(`/room/${roomId}/members`);
   revalidatePath(`/room/${roomId}/balances`);
   return { error: null };
+}
+
+export async function setMemberRole(memberId: string, roomId: string, role: "admin" | "member") {
+  const userId = await requireUserId();
+
+  let membership;
+  try {
+    membership = await requireActiveMembership(userId, roomId);
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Not permitted." };
+  }
+  if (membership.role !== "admin") return { error: "Only admins can change roles." };
+
+  const [target] = await db
+    .select()
+    .from(room_members)
+    .where(eq(room_members.id, memberId))
+    .limit(1);
+  if (!target || target.room_id !== roomId) return { error: "Member not found." };
+
+  if (role === "member" && target.role === "admin") {
+    const [{ value: adminCount }] = await db
+      .select({ value: count() })
+      .from(room_members)
+      .where(
+        and(
+          eq(room_members.room_id, roomId),
+          eq(room_members.role, "admin"),
+          eq(room_members.is_active, true),
+        ),
+      );
+    if (adminCount <= 1) return { error: "A room must have at least one admin." };
+  }
+
+  await db.update(room_members).set({ role }).where(eq(room_members.id, memberId));
+
+  revalidatePath(`/room/${roomId}/members`);
+  return { error: null };
+}
+
+export async function deleteRoom(roomId: string) {
+  const userId = await requireUserId();
+
+  let membership;
+  try {
+    membership = await requireActiveMembership(userId, roomId);
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Not permitted." };
+  }
+  if (membership.role !== "admin") return { error: "Only admins can delete this room." };
+
+  await db.delete(rooms).where(eq(rooms.id, roomId));
+
+  revalidatePath("/rooms");
+  redirect("/rooms");
 }
