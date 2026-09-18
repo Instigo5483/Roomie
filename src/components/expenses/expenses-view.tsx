@@ -1,10 +1,13 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Receipt } from "lucide-react";
+import { Receipt, SearchX } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { defaultExpenseFilters, filterExpenses } from "@/lib/expenses/filters";
 import { ExpenseItem } from "./expense-item";
 import { AddExpenseSheet } from "./add-expense-sheet";
+import { ExpensesToolbar } from "./expenses-toolbar";
 import type { Expense, ExpenseSplit, Room, RoomMember } from "@/types/database";
 
 export function ExpensesView({
@@ -25,14 +28,22 @@ export function ExpensesView({
   isAdmin: boolean;
 }) {
   const activeMembers = members.filter((m) => m.is_active);
+  const [filters, setFilters] = useState(defaultExpenseFilters);
 
-  const groups = expenses.reduce<Record<string, Expense[]>>((acc, e) => {
+  const filteredExpenses = useMemo(
+    () => filterExpenses(expenses, filters),
+    [expenses, filters],
+  );
+
+  const groups = filteredExpenses.reduce<Record<string, Expense[]>>((acc, e) => {
     (acc[e.expense_date] ??= []).push(e);
     return acc;
   }, {});
 
   return (
     <div>
+      {expenses.length > 0 && <ExpensesToolbar members={members} filters={filters} onChange={setFilters} />}
+
       {expenses.length === 0 ? (
         <motion.div
           initial={{ opacity: 0 }}
@@ -45,6 +56,20 @@ export function ExpensesView({
           <p className="font-medium">No expenses yet</p>
           <p className="max-w-[26ch] text-sm text-muted-foreground">
             Tap the + button to add your first shared expense.
+          </p>
+        </motion.div>
+      ) : filteredExpenses.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center gap-3 py-20 text-center"
+        >
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-muted">
+            <SearchX className="size-7 text-muted-foreground" />
+          </div>
+          <p className="font-medium">No matching expenses</p>
+          <p className="max-w-[26ch] text-sm text-muted-foreground">
+            Try a different search term or clear your filters.
           </p>
         </motion.div>
       ) : (
