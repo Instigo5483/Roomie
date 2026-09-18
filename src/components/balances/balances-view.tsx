@@ -1,13 +1,14 @@
 "use client";
 
 import { motion } from "motion/react";
-import { ArrowRight, Scale, Smartphone } from "lucide-react";
+import { ArrowRight, CheckCircle2, Scale, Smartphone } from "lucide-react";
 import { computeBalances } from "@/lib/expenses/balances";
 import { simplifyDebts } from "@/lib/expenses/simplify-debts";
 import { buildUpiLink } from "@/lib/expenses/upi";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SettleUpDialog } from "./settle-up-dialog";
 import type { Expense, ExpenseSplit, Room, RoomMember, Settlement } from "@/types/database";
@@ -167,6 +168,47 @@ export function BalancesView({
           </div>
         )}
       </section>
+
+      {settlements.length > 0 && (
+        <section>
+          <h2 className="mb-2.5 px-1 text-sm font-semibold">Settlement history</h2>
+          <div className="space-y-2">
+            {settlements.map((s, i) => {
+              const from = memberById[s.from_member_id];
+              const to = memberById[s.to_member_id];
+
+              return (
+                <motion.div
+                  key={s.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                  className="flex items-center gap-3 rounded-xl border bg-card px-3.5 py-3"
+                >
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
+                    <CheckCircle2 className="size-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="flex items-center gap-1.5 truncate text-sm font-medium">
+                      {from?.display_name ?? "Someone"}
+                      <ArrowRight className="size-3.5 shrink-0 text-muted-foreground" />
+                      {to?.display_name ?? "Someone"}
+                    </p>
+                    <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <span>{formatDate(s.created_at)}</span>
+                      <Badge variant="secondary" className="h-4 px-1.5 text-[10px] capitalize">
+                        {s.method}
+                      </Badge>
+                      {s.note && <span className="truncate">· {s.note}</span>}
+                    </div>
+                  </div>
+                  <p className="shrink-0 text-sm font-semibold">{formatCurrency(Number(s.amount))}</p>
+                </motion.div>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

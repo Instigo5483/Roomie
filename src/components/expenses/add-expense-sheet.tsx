@@ -5,8 +5,9 @@ import { Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { addExpense } from "@/lib/actions/expenses";
 import type { ActionState } from "@/lib/actions/auth";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn, currentTimeHHmm, formatCurrency } from "@/lib/utils";
 import { splitEqually } from "@/lib/expenses/balances";
+import { EXPENSE_CATEGORIES, getCategoryMeta, type ExpenseCategory } from "@/lib/expenses/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +37,7 @@ const todayIso = () => new Date().toISOString().slice(0, 10);
 export function AddExpenseSheet({ room, members }: { room: Room; members: RoomMember[] }) {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState<ExpenseCategory>("other");
   const [paidBy, setPaidBy] = useState(members[0]?.id ?? "");
   const [included, setIncluded] = useState<Set<string>>(new Set(members.map((m) => m.id)));
   const [manualMode, setManualMode] = useState(false);
@@ -60,6 +62,7 @@ export function AddExpenseSheet({ room, members }: { room: Room; members: RoomMe
       toast.success("Expense added");
       setOpen(false);
       setAmount("");
+      setCategory("other");
       setManualAmounts({});
     }
     return result;
@@ -104,24 +107,49 @@ export function AddExpenseSheet({ room, members }: { room: Room; members: RoomMe
             <Input id="title" name="title" placeholder="Groceries, cab, Zomato..." required maxLength={80} />
           </div>
 
+          <div className="space-y-1.5">
+            <Label>Category</Label>
+            <Select name="category" value={category} onValueChange={(v) => setCategory(v as ExpenseCategory)}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {EXPENSE_CATEGORIES.map((value) => {
+                  const meta = getCategoryMeta(value);
+                  return (
+                    <SelectItem key={value} value={value}>
+                      <meta.icon className="size-4 text-muted-foreground" />
+                      {meta.label}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="amount">Amount (₹)</Label>
+            <Input
+              id="amount"
+              name="amount"
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              min="0.01"
+              required
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="amount">Amount (₹)</Label>
-              <Input
-                id="amount"
-                name="amount"
-                type="number"
-                inputMode="decimal"
-                step="0.01"
-                min="0.01"
-                required
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-            </div>
             <div className="space-y-1.5">
               <Label htmlFor="expenseDate">Date</Label>
               <Input id="expenseDate" name="expenseDate" type="date" defaultValue={todayIso()} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="expenseTime">Time</Label>
+              <Input id="expenseTime" name="expenseTime" type="time" defaultValue={currentTimeHHmm()} required />
             </div>
           </div>
 

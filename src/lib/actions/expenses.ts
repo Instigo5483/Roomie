@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { expense_splits, expenses } from "@/db/schema";
 import { requireActiveMembership, requireUserId } from "@/lib/auth/session";
 import { splitEqually } from "@/lib/expenses/balances";
+import { isValidExpenseCategory } from "@/lib/expenses/categories";
 import type { ActionState } from "./auth";
 
 export async function addExpense(
@@ -15,13 +16,18 @@ export async function addExpense(
   const roomId = String(formData.get("roomId") ?? "");
   const title = String(formData.get("title") ?? "").trim();
   const amount = Number(formData.get("amount"));
+  const category = String(formData.get("category") ?? "other");
   const paidBy = String(formData.get("paidBy") ?? "");
   const expenseDate = String(formData.get("expenseDate") ?? "");
+  const expenseTime = String(formData.get("expenseTime") ?? "").trim();
   const splitMode = String(formData.get("splitMode") ?? "equal");
   const includedMemberIds = formData.getAll("includedMemberIds").map(String);
 
   if (!roomId || !title || !paidBy || !expenseDate) {
     return { error: "All fields are required." };
+  }
+  if (!isValidExpenseCategory(category)) {
+    return { error: "Choose a valid category." };
   }
   if (!Number.isFinite(amount) || amount <= 0) {
     return { error: "Enter a valid amount." };
@@ -65,8 +71,10 @@ export async function addExpense(
       room_id: roomId,
       title,
       amount: amount.toFixed(2),
+      category,
       paid_by: paidBy,
       expense_date: expenseDate,
+      expense_time: expenseTime || null,
       created_by: userId,
     })
     .returning({ id: expenses.id });

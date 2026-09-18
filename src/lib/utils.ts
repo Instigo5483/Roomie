@@ -21,3 +21,18 @@ export function formatDate(date: string | Date) {
     year: "numeric",
   }).format(d);
 }
+
+export function currentTimeHHmm() {
+  const now = new Date();
+  return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+}
+
+/** "HH:MM" (24h) -> "3:45 PM" */
+export function formatTime(time: string | null): string | null {
+  if (!time) return null;
+  const [hours, minutes] = time.split(":").map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+  const d = new Date();
+  d.setHours(hours, minutes, 0, 0);
+  return new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit", hour12: true }).format(d);
+}

@@ -37,7 +37,10 @@ export function computeBalances(
       .filter((s) => s.to_member_id === member.id)
       .reduce((sum, s) => sum + Number(s.amount), 0);
 
-    const net = Math.round((totalPaid - totalOwed - settledOut + settledIn) * 100) / 100;
+    // Paying out a settlement (settledOut) reduces what you owe, so it adds
+    // back to your net; receiving one (settledIn) means you've already been
+    // paid, so it subtracts from what the group still owes you.
+    const net = Math.round((totalPaid - totalOwed + settledOut - settledIn) * 100) / 100;
 
     return { memberId: member.id, member, net, totalPaid, totalOwed, settledOut, settledIn };
   });

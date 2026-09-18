@@ -3,7 +3,8 @@
 import { motion } from "motion/react";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatTime } from "@/lib/utils";
+import { getCategoryMeta } from "@/lib/expenses/categories";
 import { deleteExpense } from "@/lib/actions/expenses";
 import {
   AlertDialog,
@@ -36,6 +37,8 @@ export function ExpenseItem({
   const payer = members.find((m) => m.id === expense.paid_by);
   const mySplit = splits.find((s) => s.room_member_id === currentMemberId);
   const paidByMe = expense.paid_by === currentMemberId;
+  const categoryMeta = getCategoryMeta(expense.category);
+  const time = formatTime(expense.expense_time);
 
   const handleDelete = async () => {
     const { error } = await deleteExpense(expense.id, roomId);
@@ -51,14 +54,15 @@ export function ExpenseItem({
       exit={{ opacity: 0, height: 0 }}
       className="flex items-center gap-3 rounded-xl border bg-card px-3.5 py-3"
     >
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-semibold text-muted-foreground">
-        {expense.title.charAt(0).toUpperCase()}
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+        <categoryMeta.icon className="size-5" />
       </div>
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{expense.title}</p>
         <p className="text-xs text-muted-foreground">
           {payer?.display_name ?? "Someone"} paid {formatCurrency(Number(expense.amount))}
+          {time && <> · {time}</>}
         </p>
       </div>
 

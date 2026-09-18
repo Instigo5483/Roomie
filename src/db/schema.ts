@@ -17,6 +17,19 @@ import { relations } from "drizzle-orm";
 
 export const room_member_role = pgEnum("room_member_role", ["admin", "member"]);
 
+export const expense_category = pgEnum("expense_category", [
+  "food",
+  "groceries",
+  "travel",
+  "transport",
+  "entertainment",
+  "shopping",
+  "utilities",
+  "rent",
+  "transfer",
+  "other",
+]);
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
@@ -62,10 +75,12 @@ export const expenses = pgTable("expenses", {
     .references(() => rooms.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+  category: expense_category("category").notNull().default("other"),
   paid_by: uuid("paid_by")
     .notNull()
     .references(() => room_members.id),
   expense_date: date("expense_date").notNull().defaultNow(),
+  expense_time: text("expense_time"),
   created_by: uuid("created_by")
     .notNull()
     .references(() => users.id),

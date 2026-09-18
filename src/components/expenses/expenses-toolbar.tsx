@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { countActiveFilters, defaultExpenseFilters, type ExpenseFilters } from "@/lib/expenses/filters";
+import { EXPENSE_CATEGORIES, getCategoryMeta } from "@/lib/expenses/categories";
 import type { RoomMember } from "@/types/database";
 
 export function ExpensesToolbar({
@@ -79,6 +80,30 @@ export function ExpensesToolbar({
                     {m.display_name}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Category</Label>
+            <Select
+              value={filters.category}
+              onValueChange={(value) => onChange({ ...filters, category: value })}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any category</SelectItem>
+                {EXPENSE_CATEGORIES.map((value) => {
+                  const meta = getCategoryMeta(value);
+                  return (
+                    <SelectItem key={value} value={value}>
+                      <meta.icon className="size-4 text-muted-foreground" />
+                      {meta.label}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
