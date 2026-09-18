@@ -1,0 +1,17 @@
+{
+  "name": "Roomie — Split Expenses with Roommates",
+  "short_name": "Roomie",
+  "description": "Track shared room expenses, split bills fairly, and settle up instantly with UPI. Open to anyone.",
+  "start_url": "/rooms",
+  "display": "standalone",
+  "background_color": "#fafaf5",
+  "theme_color": "#1f9186",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
