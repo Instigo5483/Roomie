@@ -12,11 +12,12 @@ export function RoomCard({ room, role, memberCount }: MyRoom) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25 }}
+      whileHover={{ y: -3 }}
+      whileTap={{ scale: 0.98, y: 0 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
     >
       <Link href={`/room/${room.id}`}>
-        <Card className="transition-colors hover:border-primary/40 hover:bg-accent/40">
+        <Card className="transition-all duration-200 hover:border-primary/40 hover:bg-accent/40 hover:shadow-md">
           <CardContent className="flex items-center gap-4 py-1">
             <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold tracking-wide text-primary">
               {room.name.slice(0, 2).toUpperCase()}
@@ -34,7 +35,9 @@ export function RoomCard({ room, role, memberCount }: MyRoom) {
                 )}
               </div>
             </div>
-            <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
+            <motion.div whileHover={{ x: 3 }} transition={{ duration: 0.15 }}>
+              <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
+            </motion.div>
           </CardContent>
         </Card>
       </Link>

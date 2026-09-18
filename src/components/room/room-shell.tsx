@@ -33,9 +33,11 @@ export function RoomShell({
     <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col">
       <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex min-w-0 items-center gap-1.5 rounded-md py-1 text-left outline-none">
-            <p className="truncate text-sm font-semibold leading-tight">{room.name}</p>
-            <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+          <DropdownMenuTrigger className="group flex min-w-0 items-center gap-1.5 rounded-md py-1 text-left outline-none">
+            <p className="truncate text-sm font-semibold leading-tight transition-colors group-hover:text-primary">
+              {room.name}
+            </p>
+            <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform duration-150 group-hover:translate-y-0.5 group-data-[state=open]:rotate-180" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-64">
             <DropdownMenuLabel>Switch room</DropdownMenuLabel>

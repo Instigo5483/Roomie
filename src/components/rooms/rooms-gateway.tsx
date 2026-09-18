@@ -45,7 +45,7 @@ export function RoomsGateway({
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="rounded-full">
+            <button className="rounded-full transition-transform duration-150 hover:scale-105 active:scale-95">
               <Avatar>
                 <AvatarFallback className="bg-primary/10 text-primary">{initial}</AvatarFallback>
               </Avatar>

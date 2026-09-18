@@ -33,7 +33,7 @@ export function BottomNav({ roomId }: { roomId: string }) {
           <Link
             key={tab.href}
             href={tab.href}
-            className="relative flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium"
+            className="group relative flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors"
           >
             {tab.match && (
               <motion.div
@@ -43,9 +43,17 @@ export function BottomNav({ roomId }: { roomId: string }) {
               />
             )}
             <tab.icon
-              className={cn("size-5", tab.match ? "text-primary" : "text-muted-foreground")}
+              className={cn(
+                "size-5 transition-transform duration-150 group-hover:scale-110",
+                tab.match ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
+              )}
             />
-            <span className={cn(tab.match ? "text-primary" : "text-muted-foreground")}>
+            <span
+              className={cn(
+                "transition-colors",
+                tab.match ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
+              )}
+            >
               {tab.label}
             </span>
           </Link>
