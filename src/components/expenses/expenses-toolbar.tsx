@@ -14,6 +14,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { countActiveFilters, defaultExpenseFilters, type ExpenseFilters } from "@/lib/expenses/filters";
 import { EXPENSE_CATEGORIES, getCategoryMeta } from "@/lib/expenses/categories";
+import { cn } from "@/lib/utils";
 import type { RoomMember } from "@/types/database";
 
 export function ExpensesToolbar({
@@ -28,18 +29,19 @@ export function ExpensesToolbar({
   const activeCount = countActiveFilters(filters);
 
   return (
-    <div className="mb-4 flex items-center gap-2">
-      <div className="relative flex-1">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={filters.search}
-          onChange={(e) => onChange({ ...filters, search: e.target.value })}
-          placeholder="Search expenses..."
-          className="pl-9"
-        />
-      </div>
+    <div className="mb-4 space-y-2.5">
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={filters.search}
+            onChange={(e) => onChange({ ...filters, search: e.target.value })}
+            placeholder="Search expenses..."
+            className="pl-9"
+          />
+        </div>
 
-      <Popover>
+        <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" size="icon" className="relative shrink-0">
             <ListFilter className="size-4" />
@@ -84,29 +86,7 @@ export function ExpensesToolbar({
             </Select>
           </div>
 
-          <div className="space-y-1.5">
-            <Label>Category</Label>
-            <Select
-              value={filters.category}
-              onValueChange={(value) => onChange({ ...filters, category: value })}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Any category</SelectItem>
-                {EXPENSE_CATEGORIES.map((value) => {
-                  const meta = getCategoryMeta(value);
-                  return (
-                    <SelectItem key={value} value={value}>
-                      <meta.icon className="size-4 text-muted-foreground" />
-                      {meta.label}
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
-          </div>
+          <p className="text-xs text-muted-foreground">Tip: tap a category chip below to filter by category.</p>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -129,7 +109,40 @@ export function ExpensesToolbar({
             </div>
           </div>
         </PopoverContent>
-      </Popover>
+        </Popover>
+      </div>
+
+      <div className="scrollbar-none flex gap-1.5 overflow-x-auto">
+        <button
+          type="button"
+          onClick={() => onChange({ ...filters, category: "all" })}
+          className={cn(
+            "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+            filters.category === "all"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground hover:text-foreground",
+          )}
+        >
+          All
+        </button>
+        {EXPENSE_CATEGORIES.map((value) => {
+          const meta = getCategoryMeta(value);
+          const active = filters.category === value;
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => onChange({ ...filters, category: active ? "all" : value })}
+              className={cn(
+                "flex shrink-0 items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <meta.icon className="size-3.5" /> {meta.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

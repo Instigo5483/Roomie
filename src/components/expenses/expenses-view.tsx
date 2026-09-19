@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Receipt, SearchX } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { defaultExpenseFilters, filterExpenses } from "@/lib/expenses/filters";
 import { ExpenseItem } from "./expense-item";
 import { AddExpenseSheet } from "./add-expense-sheet";
@@ -35,6 +35,14 @@ export function ExpensesView({
     [expenses, filters],
   );
 
+  const monthLabel = new Date().toLocaleDateString("en-IN", { month: "long" });
+  const monthTotal = useMemo(() => {
+    const ym = new Date().toISOString().slice(0, 7);
+    return expenses
+      .filter((e) => e.expense_date.startsWith(ym))
+      .reduce((sum, e) => sum + Number(e.amount), 0);
+  }, [expenses]);
+
   const groups = filteredExpenses.reduce<Record<string, Expense[]>>((acc, e) => {
     (acc[e.expense_date] ??= []).push(e);
     return acc;
@@ -42,6 +50,17 @@ export function ExpensesView({
 
   return (
     <div>
+      {expenses.length > 0 && (
+        <div className="mb-4 flex items-end justify-between">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">Expenses</h1>
+            <p className="text-xs text-muted-foreground">
+              {formatCurrency(monthTotal)} spent in {monthLabel}
+            </p>
+          </div>
+        </div>
+      )}
+
       {expenses.length > 0 && <ExpensesToolbar members={members} filters={filters} onChange={setFilters} />}
 
       {expenses.length === 0 ? (
@@ -76,8 +95,9 @@ export function ExpensesView({
         <div className="space-y-5">
           {Object.entries(groups).map(([date, dayExpenses]) => (
             <div key={date}>
-              <p className="mb-2 px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {formatDate(date)}
+              <p className="mb-2 flex items-center justify-between px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <span>{formatDate(date)}</span>
+                <span>{formatCurrency(dayExpenses.reduce((sum, e) => sum + Number(e.amount), 0))}</span>
               </p>
               <div className="space-y-2">
                 <AnimatePresence initial={false}>

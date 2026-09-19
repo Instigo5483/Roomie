@@ -39,6 +39,12 @@ export function ExpenseItem({
   const paidByMe = expense.paid_by === currentMemberId;
   const categoryMeta = getCategoryMeta(expense.category);
   const time = formatTime(expense.expense_time);
+  const splitDescription =
+    splits.length === 0
+      ? null
+      : splits.length === 1
+        ? "Not split"
+        : `Split ${splits.length} ways`;
 
   const handleDelete = async () => {
     const { error } = await deleteExpense(expense.id, roomId);
@@ -54,15 +60,16 @@ export function ExpenseItem({
       exit={{ opacity: 0, height: 0 }}
       className="flex items-center gap-3 rounded-xl border bg-card px-3.5 py-3"
     >
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+      <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${categoryMeta.tint}`}>
         <categoryMeta.icon className="size-5" />
       </div>
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{expense.title}</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="truncate text-xs text-muted-foreground">
           {payer?.display_name ?? "Someone"} paid {formatCurrency(Number(expense.amount))}
           {time && <> · {time}</>}
+          {splitDescription && <> · {splitDescription}</>}
         </p>
       </div>
 
@@ -74,7 +81,7 @@ export function ExpenseItem({
               {formatCurrency(Math.abs(paidByMe ? Number(expense.amount) - Number(mySplit.share_amount) : Number(mySplit.share_amount)))}
             </p>
           ) : (
-            <p className="text-sm text-muted-foreground">Not split with you</p>
+            <p className="text-xs text-muted-foreground">Not involved</p>
           )}
         </div>
 
