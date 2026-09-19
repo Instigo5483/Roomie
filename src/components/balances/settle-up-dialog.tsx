@@ -1,10 +1,11 @@
 "use client";
 
 import { useActionState, useState, type ReactNode } from "react";
-import { Loader2 } from "lucide-react";
+import { Banknote, Landmark, Loader2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { recordSettlement } from "@/lib/actions/settlements";
 import type { ActionState } from "@/lib/actions/auth";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -127,16 +128,30 @@ export function SettleUpDialog({
             </div>
             <div className="space-y-1.5">
               <Label>Method</Label>
-              <Select name="method" value={method} onValueChange={setMethod}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="upi">UPI</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <input type="hidden" name="method" value={method} />
+              <div className="grid h-9 grid-cols-3 gap-1 rounded-lg bg-muted p-1">
+                {(
+                  [
+                    { value: "cash", label: "Cash", icon: Banknote },
+                    { value: "upi", label: "UPI", icon: Zap },
+                    { value: "other", label: "Other", icon: Landmark },
+                  ] as const
+                ).map((m) => (
+                  <button
+                    key={m.value}
+                    type="button"
+                    onClick={() => setMethod(m.value)}
+                    className={cn(
+                      "flex items-center justify-center gap-1 rounded-md text-xs font-medium transition-colors",
+                      method === m.value
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <m.icon className="size-3.5" /> {m.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { ArrowRight, CheckCircle2, Scale, Smartphone } from "lucide-react";
+import { ArrowRight, Banknote, Landmark, Scale, Smartphone, Sparkles, Zap } from "lucide-react";
 import { computeBalances } from "@/lib/expenses/balances";
 import { simplifyDebts } from "@/lib/expenses/simplify-debts";
 import { buildUpiLink } from "@/lib/expenses/upi";
@@ -39,60 +39,131 @@ export function BalancesView({
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-        <Card className="border-none bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md">
-          <CardContent className="py-2">
-            <p className="text-sm opacity-80">
-              {myBalance && myBalance.net > 0.01
-                ? "You are owed"
-                : myBalance && myBalance.net < -0.01
-                  ? "You owe"
-                  : "You're all settled up"}
-            </p>
-            <p className="mt-1 text-3xl font-bold tracking-tight">
-              {myBalance ? formatCurrency(Math.abs(myBalance.net)) : formatCurrency(0)}
-            </p>
+        <Card className="border-none bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground shadow-md">
+          <CardContent className="space-y-4 py-2">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider">
+                <span className="size-1.5 rounded-full bg-white" /> Net Balance
+              </span>
+            </div>
+
+            <div>
+              <p className="text-sm text-primary-foreground/85">
+                {myBalance && myBalance.net > 0.01
+                  ? "You are owed money overall"
+                  : myBalance && myBalance.net < -0.01
+                    ? "You owe money overall"
+                    : "You're all settled up"}
+              </p>
+              <p className="mt-1 text-3xl font-bold tracking-tight">
+                {myBalance && myBalance.net > 0.01 && "+"}
+                {myBalance && myBalance.net < -0.01 && "-"}
+                {myBalance ? formatCurrency(Math.abs(myBalance.net)) : formatCurrency(0)}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="rounded-xl bg-black/15 p-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-primary-foreground/70">
+                  You lent
+                </p>
+                <p className="text-base font-semibold">{formatCurrency(myBalance?.totalPaid ?? 0)}</p>
+              </div>
+              <div className="rounded-xl bg-black/15 p-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-primary-foreground/70">
+                  You owe
+                </p>
+                <p className="text-base font-semibold">{formatCurrency(myBalance?.totalOwed ?? 0)}</p>
+              </div>
+            </div>
+
+            <SettleUpDialog
+              room={room}
+              members={members}
+              trigger={
+                <Button className="w-full bg-white text-primary hover:bg-white/90" size="lg">
+                  Settle up now
+                </Button>
+              }
+            />
           </CardContent>
         </Card>
       </motion.div>
 
       <section>
-        <h2 className="mb-2.5 px-1 text-sm font-semibold">Balances</h2>
+        <div className="mb-2.5 flex items-center justify-between px-1">
+          <h2 className="text-sm font-semibold">Roommate balances</h2>
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+            {balances.length} total
+          </span>
+        </div>
         <div className="space-y-2">
-          {balances.map((b, i) => (
-            <motion.div
-              key={b.memberId}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              className="flex items-center gap-3 rounded-xl border bg-card px-3.5 py-3"
-            >
-              <Avatar className="size-9">
-                <AvatarFallback className="bg-muted text-sm">
-                  {b.member.display_name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">
-                  {b.member.display_name}
-                  {b.memberId === currentMemberId && (
-                    <span className="ml-1.5 text-xs text-muted-foreground">(you)</span>
-                  )}
-                </p>
-                {!b.member.is_active && (
-                  <p className="text-xs text-muted-foreground">Inactive</p>
-                )}
-              </div>
-              <p
+          {balances.map((b, i) => {
+            const isMe = b.memberId === currentMemberId;
+            const statusLabel = !b.member.is_active
+              ? "Settled up"
+              : b.net > 0.01
+                ? isMe
+                  ? "Owed to you overall"
+                  : "Owed money"
+                : b.net < -0.01
+                  ? "Owes money"
+                  : "Settled up";
+            return (
+              <motion.div
+                key={b.memberId}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
                 className={cn(
-                  "text-sm font-semibold",
-                  b.net > 0.01 ? "text-success" : b.net < -0.01 ? "text-destructive" : "text-muted-foreground",
+                  "flex items-center gap-3 rounded-xl border bg-card px-3.5 py-3",
+                  !b.member.is_active && "opacity-60",
                 )}
               >
-                {b.net > 0.01 ? "+" : b.net < -0.01 ? "-" : ""}
-                {formatCurrency(Math.abs(b.net))}
-              </p>
-            </motion.div>
-          ))}
+                <Avatar className="size-9">
+                  <AvatarFallback className="bg-muted text-sm">
+                    {b.member.display_name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="flex items-center gap-1.5 truncate text-sm font-medium">
+                    {b.member.display_name}
+                    {isMe && (
+                      <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                        You
+                      </span>
+                    )}
+                    {!b.member.is_active && (
+                      <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                        Inactive
+                      </span>
+                    )}
+                  </p>
+                  <p
+                    className={cn(
+                      "text-xs font-medium",
+                      b.net > 0.01 && b.member.is_active
+                        ? "text-success"
+                        : b.net < -0.01 && b.member.is_active
+                          ? "text-destructive"
+                          : "text-muted-foreground",
+                    )}
+                  >
+                    {statusLabel}
+                  </p>
+                </div>
+                <p
+                  className={cn(
+                    "text-sm font-semibold",
+                    b.net > 0.01 ? "text-success" : b.net < -0.01 ? "text-destructive" : "text-muted-foreground",
+                  )}
+                >
+                  {b.net > 0.01 ? "+" : b.net < -0.01 ? "-" : ""}
+                  {formatCurrency(Math.abs(b.net))}
+                </p>
+              </motion.div>
+            );
+          })}
         </div>
       </section>
 
@@ -101,6 +172,14 @@ export function BalancesView({
           <h2 className="text-sm font-semibold">Suggested settlements</h2>
           <SettleUpDialog room={room} members={members} trigger={<Button size="sm" variant="outline">Settle up</Button>} />
         </div>
+
+        {transactions.length > 0 && (
+          <div className="mb-2.5 inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+            <Sparkles className="size-3.5 text-primary" />
+            Optimized to {transactions.length} {transactions.length === 1 ? "transfer" : "transfers"} to clear all
+            debts
+          </div>
+        )}
 
         {transactions.length === 0 ? (
           <Card>
@@ -116,6 +195,7 @@ export function BalancesView({
               const to = memberById[t.toMemberId];
               const toUpi = upiIds[to?.user_id ?? ""];
               const iAmPayer = t.fromMemberId === currentMemberId;
+              const iAmRecipient = t.toMemberId === currentMemberId;
 
               return (
                 <motion.div
@@ -127,9 +207,13 @@ export function BalancesView({
                   <Card>
                     <CardContent className="flex flex-col gap-3 py-2">
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="font-medium">{from?.display_name}</span>
+                        <span className={cn("font-medium", iAmPayer && "text-destructive")}>
+                          {iAmPayer ? "You" : from?.display_name}
+                        </span>
                         <ArrowRight className="size-4 text-muted-foreground" />
-                        <span className="font-medium">{to?.display_name}</span>
+                        <span className={cn("font-medium", iAmRecipient && "text-success")}>
+                          {iAmRecipient ? "You" : to?.display_name}
+                        </span>
                         <span className="ml-auto font-semibold">{formatCurrency(t.amount)}</span>
                       </div>
                       <div className="flex gap-2">
@@ -176,6 +260,9 @@ export function BalancesView({
             {settlements.map((s, i) => {
               const from = memberById[s.from_member_id];
               const to = memberById[s.to_member_id];
+              const iPaid = s.from_member_id === currentMemberId;
+              const iReceived = s.to_member_id === currentMemberId;
+              const MethodIcon = s.method === "upi" ? Zap : s.method === "cash" ? Banknote : Landmark;
 
               return (
                 <motion.div
@@ -185,14 +272,14 @@ export function BalancesView({
                   transition={{ delay: i * 0.04 }}
                   className="flex items-center gap-3 rounded-xl border bg-card px-3.5 py-3"
                 >
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
-                    <CheckCircle2 className="size-4" />
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <MethodIcon className="size-4" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-1.5 truncate text-sm font-medium">
-                      {from?.display_name ?? "Someone"}
+                      {iPaid ? "You" : from?.display_name ?? "Someone"}
                       <ArrowRight className="size-3.5 shrink-0 text-muted-foreground" />
-                      {to?.display_name ?? "Someone"}
+                      {iReceived ? "You" : to?.display_name ?? "Someone"}
                     </p>
                     <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                       <span>{formatDate(s.created_at)}</span>
@@ -202,7 +289,15 @@ export function BalancesView({
                       {s.note && <span className="truncate">· {s.note}</span>}
                     </div>
                   </div>
-                  <p className="shrink-0 text-sm font-semibold">{formatCurrency(Number(s.amount))}</p>
+                  <p
+                    className={cn(
+                      "shrink-0 text-sm font-semibold",
+                      iReceived ? "text-success" : iPaid ? "text-destructive" : "text-foreground",
+                    )}
+                  >
+                    {iReceived ? "+" : iPaid ? "-" : ""}
+                    {formatCurrency(Number(s.amount))}
+                  </p>
                 </motion.div>
               );
             })}
