@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { motion } from "motion/react";
-import { Loader2, MoreVertical, ShieldMinus, ShieldPlus, UserMinus } from "lucide-react";
+import { Loader2, Lock, MoreVertical, ShieldMinus, ShieldPlus, UserMinus } from "lucide-react";
 import { toast } from "sonner";
 import { deactivateMember } from "@/lib/actions/settlements";
 import { setMemberRole } from "@/lib/actions/rooms";
@@ -82,37 +83,71 @@ export function MemberRow({
         !member.is_active && "opacity-50",
       )}
     >
-      <Avatar className="size-9">
-        <AvatarFallback className="bg-muted text-sm">
-          {member.display_name.charAt(0).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
+      <div className="relative shrink-0">
+        <Avatar className="size-9">
+          <AvatarFallback className="bg-muted text-sm">
+            {member.display_name.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <span
+          className={cn(
+            "absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full ring-2 ring-card",
+            member.is_active ? "bg-success" : "bg-muted-foreground",
+          )}
+        />
+      </div>
 
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-1.5 truncate text-sm font-medium">
-          {member.display_name}
-          {isMe && <span className="text-xs text-muted-foreground">(you)</span>}
-        </p>
-        <div className="mt-0.5 flex items-center gap-1.5">
+        <p className="flex flex-wrap items-center gap-1.5 text-sm font-medium">
+          <span className={cn("truncate", !member.is_active && "text-muted-foreground line-through")}>
+            {member.display_name}
+          </span>
+          {isMe && (
+            <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
+              You
+            </span>
+          )}
           {member.role === "admin" && (
             <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
               Admin
             </Badge>
           )}
-          {!member.is_active ? (
-            <span className="text-xs text-muted-foreground">Inactive</span>
-          ) : (
-            <span
-              className={cn(
-                "text-xs",
-                net > 0.01 ? "text-success" : net < -0.01 ? "text-destructive" : "text-muted-foreground",
-              )}
-            >
-              {net > 0.01 ? "gets back " : net < -0.01 ? "owes " : "settled"}
-              {Math.abs(net) > 0.01 && formatCurrency(Math.abs(net))}
+          {!member.is_active && (
+            <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
+              Inactive
             </span>
           )}
-        </div>
+        </p>
+        {!member.is_active ? (
+          <p className="text-xs text-muted-foreground">History preserved</p>
+        ) : null}
+      </div>
+
+      <div className="flex shrink-0 flex-col items-end gap-0.5">
+        {!member.is_active ? (
+          <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+            {formatCurrency(0)}
+          </span>
+        ) : (
+          <>
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              {net > 0.01 ? "Gets back" : net < -0.01 ? "Owes" : "Settled"}
+            </span>
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-1 text-xs font-bold",
+                net > 0.01
+                  ? "bg-success/10 text-success"
+                  : net < -0.01
+                    ? "bg-destructive/10 text-destructive"
+                    : "bg-muted text-muted-foreground",
+              )}
+            >
+              {net > 0.01 ? "+" : net < -0.01 ? "-" : ""}
+              {formatCurrency(Math.abs(net))}
+            </span>
+          </>
+        )}
       </div>
 
       {showMenu && (
@@ -137,11 +172,7 @@ export function MemberRow({
               {canManage && (
                 <>
                   {isViewerAdmin && <DropdownMenuSeparator />}
-                  <DropdownMenuItem
-                    variant="destructive"
-                    disabled={!canDeactivate}
-                    onSelect={() => setConfirmOpen(true)}
-                  >
+                  <DropdownMenuItem variant="destructive" onSelect={() => setConfirmOpen(true)}>
                     <UserMinus /> Remove from room
                   </DropdownMenuItem>
                 </>
@@ -154,11 +185,27 @@ export function MemberRow({
               <AlertDialogHeader>
                 <AlertDialogTitle>Remove {member.display_name}?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  {canDeactivate
-                    ? "They'll be marked inactive and won't be included in future expense splits. Their expense history stays intact."
-                    : "This member has a non-zero balance and can't be removed until they're settled up."}
+                  They&apos;ll be marked inactive and won&apos;t be included in future expense splits. Their
+                  expense history stays intact.
                 </AlertDialogDescription>
               </AlertDialogHeader>
+
+              {!canDeactivate && (
+                <div className="flex flex-col gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+                  <p className="flex items-start gap-2 font-medium">
+                    <Lock className="mt-0.5 size-4 shrink-0" />
+                    Can&apos;t remove yet — {member.display_name} currently{" "}
+                    {net > 0 ? "gets back" : "owes"} {formatCurrency(Math.abs(net))}.
+                  </p>
+                  <Link
+                    href={`/room/${roomId}/balances`}
+                    className="self-start rounded-md bg-destructive px-2.5 py-1 text-xs font-medium text-destructive-foreground"
+                  >
+                    Go to settle up in Balances
+                  </Link>
+                </div>
+              )}
+
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction disabled={!canDeactivate || pending} onClick={handleDeactivate}>

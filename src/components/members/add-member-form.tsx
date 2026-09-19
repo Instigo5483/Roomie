@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useRef } from "react";
-import { Loader2, UserPlus } from "lucide-react";
+import { Loader2, Sparkles, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { addRoomMember } from "@/lib/actions/rooms";
 import type { ActionState } from "@/lib/actions/auth";
@@ -37,15 +37,19 @@ export function AddMemberForm({ roomId }: { roomId: string }) {
         </div>
         <form ref={formRef} action={formAction} className="flex items-end gap-2">
           <input type="hidden" name="roomId" value={roomId} />
-          <div className="flex-1 space-y-1.5">
+          <div className="relative flex-1 space-y-1.5">
             <Label htmlFor="add-username" className="sr-only">
               Username
             </Label>
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+              @
+            </span>
             <Input
               id="add-username"
               name="username"
               placeholder="username"
               required
+              className="pl-6"
               onInput={(e) => {
                 e.currentTarget.value = e.currentTarget.value.toLowerCase().replace(/[^a-z0-9_]/g, "");
               }}
@@ -56,6 +60,9 @@ export function AddMemberForm({ roomId }: { roomId: string }) {
             Add
           </Button>
         </form>
+        <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
+          <Sparkles className="size-3" /> Auto-lowercased &amp; sanitized as you type
+        </p>
         {state.error && <p className="text-sm text-destructive">{state.error}</p>}
       </CardContent>
     </Card>
