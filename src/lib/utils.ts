@@ -36,3 +36,10 @@ export function formatTime(time: string | null): string | null {
   d.setHours(hours, minutes, 0, 0);
   return new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit", hour12: true }).format(d);
 }
+
+export function getTimeOfDayGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}

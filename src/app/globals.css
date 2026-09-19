@@ -34,73 +34,77 @@
 }
 
 :root {
-  --radius: 0.85rem;
+  --radius: 1rem;
 
-  --background: hsl(40 33% 98%);
-  --foreground: hsl(222 25% 14%);
+  /* Stitch design system: "Cozy Living Modern" */
+  --background: #fcfaf8;
+  --foreground: #1b202d;
 
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(222 25% 14%);
+  --card: #ffffff;
+  --card-foreground: #1b202d;
 
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(222 25% 14%);
+  --popover: #ffffff;
+  --popover-foreground: #1b202d;
 
-  /* teal — primary brand color */
-  --primary: hsl(174 62% 35%);
-  --primary-foreground: hsl(174 40% 97%);
+  /* Deep Sea Pine Teal — primary brand color */
+  --primary: #229186;
+  --primary-foreground: #ffffff;
 
-  /* warm coral — secondary accent, used sparingly for "you owe" states */
-  --secondary: hsl(30 45% 93%);
-  --secondary-foreground: hsl(20 35% 25%);
+  /* Soft Toasted Honey — warm communal neutral for badges/containers */
+  --secondary: #f5ede5;
+  --secondary-foreground: #63341d;
 
-  --muted: hsl(222 15% 95%);
-  --muted-foreground: hsl(222 12% 38%);
+  --muted: #f0f1f4;
+  --muted-foreground: #555c6d;
 
-  --accent: hsl(30 65% 89%);
-  --accent-foreground: hsl(20 55% 25%);
+  /* Warm Honey-Coral — soft-emphasis chips and highlights */
+  --accent: #f5e3d1;
+  --accent-foreground: #63341d;
 
-  --destructive: hsl(6 72% 48%);
-  --destructive-foreground: hsl(6 40% 97%);
+  /* Outstanding Debt Coral-Red */
+  --destructive: #d33422;
+  --destructive-foreground: #ffffff;
 
-  --success: hsl(150 55% 34%);
-  --success-foreground: hsl(150 40% 97%);
+  /* Positive Settlement Emerald */
+  --success: #278657;
+  --success-foreground: #ffffff;
 
-  --border: hsl(222 15% 87%);
-  --input: hsl(222 15% 87%);
-  --ring: hsl(174 62% 35%);
+  --border: #d9dce3;
+  --input: #d9dce3;
+  --ring: #229186;
 }
 
 .dark {
-  --background: hsl(222 26% 9%);
-  --foreground: hsl(222 15% 95%);
+  --background: #12181b;
+  --foreground: #eef1f0;
 
-  --card: hsl(222 22% 13%);
-  --card-foreground: hsl(222 15% 95%);
+  --card: #1c2226;
+  --card-foreground: #eef1f0;
 
-  --popover: hsl(222 22% 13%);
-  --popover-foreground: hsl(222 15% 95%);
+  --popover: #1c2226;
+  --popover-foreground: #eef1f0;
 
-  --primary: hsl(174 55% 52%);
-  --primary-foreground: hsl(174 40% 9%);
+  --primary: #3db3a4;
+  --primary-foreground: #04211d;
 
-  --secondary: hsl(25 22% 20%);
-  --secondary-foreground: hsl(25 35% 90%);
+  --secondary: #3a2f26;
+  --secondary-foreground: #f0ddc9;
 
-  --muted: hsl(222 16% 20%);
-  --muted-foreground: hsl(222 12% 68%);
+  --muted: #262c30;
+  --muted-foreground: #a8b0b4;
 
-  --accent: hsl(25 30% 23%);
-  --accent-foreground: hsl(25 45% 90%);
+  --accent: #4a372a;
+  --accent-foreground: #f5e3d1;
 
-  --destructive: hsl(6 65% 54%);
-  --destructive-foreground: hsl(6 30% 9%);
+  --destructive: #e2604f;
+  --destructive-foreground: #2b0805;
 
-  --success: hsl(150 45% 48%);
-  --success-foreground: hsl(150 30% 9%);
+  --success: #3fae7c;
+  --success-foreground: #052015;
 
-  --border: hsl(0 0% 100% / 12%);
-  --input: hsl(0 0% 100% / 15%);
-  --ring: hsl(174 55% 52%);
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #3db3a4;
 }
 
 @layer base {
