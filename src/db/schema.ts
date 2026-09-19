@@ -38,6 +38,7 @@ export const users = pgTable("users", {
   full_name: text("full_name"),
   avatar_url: text("avatar_url"),
   upi_id: text("upi_id"),
+  sessions_invalidated_at: timestamp("sessions_invalidated_at", { withTimezone: true }),
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

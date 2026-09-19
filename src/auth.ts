@@ -35,11 +35,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user?.id) token.userId = user.id;
+      if (user?.id) {
+        token.userId = user.id;
+        token.iat = Math.floor(Date.now() / 1000);
+      }
+
+      // "Sign out of all devices" works by stamping sessions_invalidated_at on
+      // the user row — any JWT issued before that moment is treated as dead.
+      if (token.userId) {
+        const dbUser = await db.query.users.findFirst({
+          where: eq(users.id, token.userId as string),
+          columns: { sessions_invalidated_at: true },
+        });
+        const invalidatedAt = dbUser?.sessions_invalidated_at
+          ? Math.floor(new Date(dbUser.sessions_invalidated_at).getTime() / 1000)
+          : null;
+        const issuedAt = typeof token.iat === "number" ? token.iat : 0;
+
+        if (invalidatedAt !== null && issuedAt < invalidatedAt) {
+          delete token.userId;
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.userId) session.user.id = token.userId as string;
+      if (!token.userId) {
+        return { ...session, user: undefined as unknown as typeof session.user };
+      }
+      if (session.user) session.user.id = token.userId as string;
       return session;
     },
   },

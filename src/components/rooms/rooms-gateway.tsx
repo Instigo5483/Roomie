@@ -25,10 +25,12 @@ export function RoomsGateway({
   rooms,
   username,
   userEmail,
+  avatarUrl,
 }: {
   rooms: MyRoom[];
   username: string;
   userEmail: string;
+  avatarUrl: string | null;
 }) {
   const initial = username.charAt(0).toUpperCase() || "?";
   const greeting = getTimeOfDayGreeting();
@@ -52,7 +54,7 @@ export function RoomsGateway({
           <DropdownMenuTrigger asChild>
             <button className="rounded-full transition-transform duration-150 hover:scale-105 active:scale-95">
               <Avatar>
-                <AvatarImage src="/default-avatar.jpg" alt={username} />
+                <AvatarImage src={avatarUrl ?? "/default-avatar.jpg"} alt={username} />
                 <AvatarFallback className="bg-primary/10 text-primary">{initial}</AvatarFallback>
               </Avatar>
             </button>

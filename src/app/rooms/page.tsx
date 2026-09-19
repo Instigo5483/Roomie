@@ -19,6 +19,11 @@ export default async function RoomsPage() {
   ]);
 
   return (
-    <RoomsGateway rooms={rooms} username={user?.username ?? ""} userEmail={session.user.email ?? ""} />
+    <RoomsGateway
+      rooms={rooms}
+      username={user?.username ?? ""}
+      userEmail={session.user.email ?? ""}
+      avatarUrl={user?.avatar_url ?? null}
+    />
   );
 }
